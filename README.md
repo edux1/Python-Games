@@ -10,4 +10,4 @@ pip install pygame
 To execute the game write:
 ```python
 python .\minesweeper.py
-``
+```
