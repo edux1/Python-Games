@@ -7,4 +7,7 @@ Also you need the Pygame library. You can install it using pip.
 ```python
 pip install pygame
 ```
-
+To execute the game write:
+```python
+python .\minesweeper.py
+``
