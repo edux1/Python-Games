@@ -1,109 +1,142 @@
 import pygame, random
 
-class Meteor(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.image.load("meteor.png").convert()
-        self.image.set_colorkey(BLACK)
-        self.rect = self.image.get_rect()
+WIDTH = 800
+HEIGHT = 600
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+
+pygame.init()
+pygame.mixer.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Shooter")
+clock = pygame.time.Clock()
+
+def draw_text(surface, text, size, x, y):
+    font = pygame.font.SysFont("serif", size)
+    text_surface = font.render(text, True, WHITE)
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surface.blit(text_surface, text_rect)
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("player.png").convert()
+        self.image = pygame.image.load("assets/player.png").convert()
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
+        self.rect.centerx = WIDTH // 2
+        self.rect.bottom = HEIGHT - 10
         self.speed_x = 0
 
-    def change_speed(self, x):
-        self.speed_x += x
-
     def update(self):
+        self.speed_x = 0
+        keystate = pygame.key.get_pressed()
+        if keystate[pygame.K_LEFT]:
+            self.speed_x = -5
+        if keystate[pygame.K_RIGHT]:
+            self.speed_x = 5
         self.rect.x += self.speed_x
-        player.rect.y = HEIGHT - 90
+        if self.rect.right > WIDTH:
+            self.rect.right = WIDTH
+        if self.rect.left < 0:
+            self.rect.left = 0
+    
+    def shoot(self):
+        bullet = Bullet(self.rect.centerx, self.rect.top)
+        all_sprites.add(bullet)
+        bullets.add(bullet)
 
-class Laser(pygame.sprite.Sprite):
+class Meteor(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("laser.png").convert()
+        self.image = random.choice(meteor_images)
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(WIDTH - self.rect.width)
+        self.rect.y = random.randrange(-140, -100)
+        self.speedy = random.randrange(1, 10)
+        self.speedx = random.randrange(-5, 5)
 
     def update(self):
-        self.rect.y -= 5
+        self.rect.y += self.speedy
+        self.rect.x += self.speedx
+        if self.rect.top > HEIGHT + 10 or self.rect.left < -40 or self.rect.right > WIDTH + 40:
+            self.rect.x = random.randrange(WIDTH - self.rect.width)
+            self.rect.y = random.randrange(-100, -40)
+            self.speedy = random.randrange(1, 10)
+            self.speedx = random.randrange(-5, 5)
 
-WIDTH = 720
-HEIGHT = 720
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.image.load("assets/laser1.png")
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.y = y
+        self.rect.centerx = x
+        self.speedy = -10
 
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-pygame.init()
-screen = pygame.display.set_mode([WIDTH, HEIGHT])
-clock = pygame.time.Clock()
-done = False
-score = 0
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.bottom < 0:
+            self.kill()
 
-all_sprite_list = pygame.sprite.Group()
+meteor_images = []
+meteor_list =  ["assets/meteorGrey_big1.png", "assets/meteorGrey_big2.png", "assets/meteorGrey_big3.png", "assets/meteorGrey_big4.png",
+				"assets/meteorGrey_med1.png", "assets/meteorGrey_med2.png", "assets/meteorGrey_small1.png", "assets/meteorGrey_small2.png",
+				"assets/meteorGrey_tiny1.png", "assets/meteorGrey_tiny2.png"]
+
+for img in meteor_list:
+    meteor_images.append(pygame.image.load(img).convert())
+
+# Cargar imagen de fondo
+background = pygame.image.load("assets/background.png").convert()
+
+all_sprites = pygame.sprite.Group()
 meteor_list = pygame.sprite.Group()
-laser_list = pygame.sprite.Group()
-
-for i in range(50):
-    meteor = Meteor()
-    meteor.rect.x = random.randrange(WIDTH - 40)
-    meteor.rect.y = random.randrange(HEIGHT - 200)
-
-    meteor_list.add(meteor)
-    all_sprite_list.add(meteor)
-
+bullets = pygame.sprite.Group()
 
 player = Player()
-all_sprite_list.add(player)
+all_sprites.add(player)
+for i in range(8):
+    meteor = Meteor()
+    all_sprites.add(meteor)
+    meteor_list.add(meteor)
 
-sound = pygame.mixer.Sound("laser5.ogg")
-background = pygame.image.load("space.png").convert()
+score = 0
 
-while not done:
+running = True
+while running:
+    clock.tick(60)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            done = True
-
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                player.change_speed(-3)
-            if event.key == pygame.K_RIGHT:
-                player.change_speed(3)
+            running = False
+        elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                laser = Laser()
-                laser.rect.x = player.rect.x + 45
-                laser.rect.y = player.rect.y - 20
+                player.shoot()
 
-                all_sprite_list.add(laser)
-                laser_list.add(laser)
-                sound.play()
+    all_sprites.update()
 
-        if event.type == pygame.KEYUP:
-            if event.key == pygame.K_LEFT:
-                player.change_speed(3)
-            if event.key == pygame.K_RIGHT:
-                player.change_speed(-3)            
+    # Colisiones meteoro/laser
+    hits = pygame.sprite.groupcollide(meteor_list, bullets, True, True)
+    for hit in hits:
+        score += 100
+        
+        meteor = Meteor()
+        all_sprites.add(meteor)
+        meteor_list.add(meteor)
 
-    all_sprite_list.update()
-
-    for laser in laser_list:
-        meteor_hit_list = pygame.sprite.spritecollide(laser, meteor_list, True)
-        for meteor in meteor_hit_list:
-            all_sprite_list.remove(laser)
-            laser_list.remove(laser)
-            score += 1
-            print(score)
-        if laser.rect.y < -10:
-            all_sprite_list.remove(laser)
-            laser_list.remove(laser)
+    # Revisar colisiones jugador/meteoro
+    hits = pygame.sprite.spritecollide(player, meteor_list, True)
+    if hits:
+        running = False
 
     screen.blit(background, [0, 0])
-    all_sprite_list.draw(screen)
+
+    all_sprites.draw(screen)
+
+    # Marcador
+    draw_text(screen, str(score), 25, WIDTH // 2, 10)
 
     pygame.display.flip()
-    clock.tick(60)
-
 pygame.quit()
