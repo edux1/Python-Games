@@ -1,13 +1,24 @@
 import pygame
 pygame.init()
 
-PLAYER_SPEED = 5
+def draw_text(surface, text, size, x, y):
+    font = pygame.font.SysFont("serif", size)
+    text_surface = font.render(text, True, white)
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surface.blit(text_surface, text_rect)
+
+PLAYER_SPEED = 10
 BALL_SPEED = 5
 
 # Colores
 black = (0, 0, 0)
 white = (255, 255, 255)
-screen_size = (800, 600)
+
+HEIGHT = 600
+WIDTH = 800
+
+screen_size = (WIDTH, HEIGHT)
 player_width = 15
 player_height = 90
 
@@ -29,6 +40,9 @@ pelota_x = 400
 pelota_y = 300
 pelota_speed_x = BALL_SPEED
 pelota_speed_y = BALL_SPEED
+
+score_1 = 0
+score_2 = 0
 
 game_over = False
 
@@ -65,10 +79,16 @@ while not game_over:
     
     # Revisa si la pelota sale del lado derecho
     if pelota_x > 800 or pelota_x < 0:
+        # Si sale de la patalla, invierte direccion
+        if pelota_x > 800:
+            pelota_speed_x = BALL_SPEED
+            score_1 += 1
+        else:
+            pelota_speed_x = -BALL_SPEED
+            score_2 += 1
         pelota_x = 400
         pelota_y = 300
-        # Si sale de la patalla, invierte direccion
-        pelota_speed_x *= -1
+        
         pelota_speed_y *= 0
 
     # Modifica las coordenadas para dar mov. a los jugadores/pelota
@@ -102,11 +122,22 @@ while not game_over:
     # Colisiones
     if pelota.colliderect(jugador1):
         pelota_speed_y = -(player1_y_coor + 45 - pelota_y)/3
-        pelota_speed_x *= -1
+        pelota_speed_x *= -1.1
     elif pelota.colliderect(jugador2):
         pelota_speed_y = -(player2_y_coor + 45 - pelota_y)/3
-        pelota_speed_x *= -1
-    pygame.display.flip()
+        pelota_speed_x *= -1.1
+    if pelota_speed_x > 30:
+        pelota_speed_x = 30
+    elif pelota_speed_x < -30:
+        pelota_speed_x = -30
+    print(pelota_speed_x)
+
+    # Puntuación player 1
+    draw_text(screen, str(score_1), 60, WIDTH//4, 10)
+    # Puntuación player 2
+    draw_text(screen, str(score_2), 60, (3*WIDTH)//4, 10)
+    pygame.display.flip()    
+
     clock.tick(60)
 
 pygame.quit()
