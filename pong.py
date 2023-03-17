@@ -130,7 +130,6 @@ while not game_over:
         pelota_speed_x = 30
     elif pelota_speed_x < -30:
         pelota_speed_x = -30
-    print(pelota_speed_x)
 
     # Puntuación player 1
     draw_text(screen, str(score_1), 60, WIDTH//4, 10)
