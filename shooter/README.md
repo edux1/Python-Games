@@ -15,5 +15,5 @@ I just wanted to learn the basics of pygame so I could start making more games.
 
 To execute the game go inside the directory where the game is found and write:
 ```python
-python .\minesweeper.py
+python .\shooter.py
 ```
