@@ -15,3 +15,5 @@ To execute the game go inside the directory where the game is found and write:
 ```python
 python .\pong.py
 ```
+
+![image](https://user-images.githubusercontent.com/72969479/226143863-580807b3-16f9-4af8-a740-6d6c264f464e.png)
