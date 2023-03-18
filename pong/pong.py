@@ -1,5 +1,6 @@
 import pygame
 pygame.init()
+pygame.display.set_caption("Pong")
 
 def draw_text(surface, text, size, x, y):
     font = pygame.font.SysFont("serif", size)
