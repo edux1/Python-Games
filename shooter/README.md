@@ -17,3 +17,5 @@ To execute the game go inside the directory where the game is found and write:
 ```python
 python .\shooter.py
 ```
+
+![image](https://user-images.githubusercontent.com/72969479/226143894-f8e26ce2-1e9c-4d26-a1fb-d290c76a9642.png)
