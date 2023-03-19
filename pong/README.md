@@ -1,4 +1,4 @@
-# Shooter Game
+# Pong
 
 This is my first game done with pygame.
 
