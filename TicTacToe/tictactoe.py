@@ -145,6 +145,7 @@ game_over = False
 running = True
 winner = 0
 turn = 0
+tokens = 0
 last_movement_valid = True
 
 while running:
@@ -156,6 +157,7 @@ while running:
         else:
             winner = 0
             turn = 0
+            tokens = 0
             mat = [[0 for _ in range(3)] for _ in range(3)]
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -165,8 +167,11 @@ while running:
             x, y = get_matrix_pos(x, y, mat)
             last_movement_valid = add_token(x, y, mat, turn)
             if last_movement_valid:
+                tokens += 1
                 if check_win(x, y, turn+1, mat):
                     winner = turn + 1
+                    game_over = True
+                elif tokens == 9:
                     game_over = True
                 else:
                     turn = (turn + 1) % 2                
