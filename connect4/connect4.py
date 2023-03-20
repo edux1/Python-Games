@@ -6,6 +6,7 @@ HEIGHT = 6 * CELL_SIZE
 
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
+YELLOW = (237, 237, 85)
 BACKGROUND = (50, 98, 168)
 
 def manage_event(event):
@@ -21,12 +22,14 @@ def display_frame():
 
 def print_table():
     cell = CELL_SIZE // 2
-    count = 0
     for i in range(6):
         for j in range(7):
-            count += 1
             if mat[i][j] == 0:
                 pygame.draw.circle(screen, WHITE, (cell + cell*j*2, cell + cell*i*2), CELL_SIZE // 3, width=0)
+            elif mat[i][j] == 1:
+                pygame.draw.circle(screen, RED, (cell + cell*j*2, cell + cell*i*2), CELL_SIZE // 3, width=0)
+            else:
+                pygame.draw.circle(screen, YELLOW, (cell + cell*j*2, cell + cell*i*2), CELL_SIZE // 3, width=0)
     pass
 
 pygame.init()
@@ -36,6 +39,8 @@ pygame.display.set_caption("Connect 4")
 clock = pygame.time.Clock()
 
 mat = [[0 for _ in range(7)] for _ in range(6)]
+mat[0][4] = 1
+mat[1][4] = 2
 print(mat)
 
 game_over = False
