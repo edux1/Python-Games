@@ -44,10 +44,11 @@ def find_first_cell_free(column):
     return -1
 
 def hover_cell():
-    column = get_column()
-    row = find_first_cell_free(column)
-    if row >= 0:
-        pygame.draw.circle(screen, BLACK, (CELL_SIZE // 2 + CELL_SIZE*column, CELL_SIZE // 2 + CELL_SIZE*row  + TEXT_SPACE), CELL_SIZE // 3, width=3)
+    if not game_over:
+        column = get_column()
+        row = find_first_cell_free(column)
+        if row >= 0:
+            pygame.draw.circle(screen, BLACK, (CELL_SIZE // 2 + CELL_SIZE*column, CELL_SIZE // 2 + CELL_SIZE*row  + TEXT_SPACE), CELL_SIZE // 3, width=3)
 
 def check_vertical(row, column, player):
     count = 0
