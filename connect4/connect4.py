@@ -55,7 +55,6 @@ def check_vertical(row, column, player):
         if mat[row+i][column] == player:
             count += 1
             if count == 3:
-                print(row, column)
                 print("VERTICAL")
                 return player
         else:
@@ -69,17 +68,15 @@ def check_horizontal(row, column, player):
         if mat[row][column+i] == player:
             count += 1
             if count == 3:
-                print(row, column)
                 print("HORIZONTAL1")
                 return player
         else:
             break
     # to the left
-    for i in range(1, row+1):
+    for i in range(1, column+1):
         if mat[row][column-i] == player:
             count += 1
             if count == 3:
-                print(row, column)
                 print("HORIZONTAL2")
                 return player
         else:
@@ -93,7 +90,6 @@ def check_diagonal_1(row, column, player):
         if mat[row+i][column+i] == player:
             count += 1
             if count == 3:
-                print(row, column)
                 print("DIAGONAL1.1")
                 return player
         else:
@@ -105,7 +101,6 @@ def check_diagonal_1(row, column, player):
         if mat[row-i][column-i] == player:
             count += 1
             if count == 3:
-                print(row, column)
                 print("DIAGONAL1.2")
                 return player
         else:
@@ -119,7 +114,6 @@ def check_diagonal_2(row, column, player):
         if mat[row-i][column+i] == player:
             count += 1
             if count == 3:
-                print(row, column)
                 print("DIAGONAL2.1")
                 return player
         else:
@@ -129,7 +123,6 @@ def check_diagonal_2(row, column, player):
         if mat[row+i][column-i] == player:
             count += 1
             if count == 3:
-                print(row, column)
                 print("DIAGONAL2.2")
                 return player
         else:
