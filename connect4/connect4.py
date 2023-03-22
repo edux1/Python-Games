@@ -56,7 +56,6 @@ def check_vertical(row, column, player):
         if mat[row+i][column] == player:
             count += 1
             if count == 3:
-                print("VERTICAL")
                 return player
         else:
             break
@@ -69,7 +68,6 @@ def check_horizontal(row, column, player):
         if mat[row][column+i] == player:
             count += 1
             if count == 3:
-                print("HORIZONTAL1")
                 return player
         else:
             break
@@ -78,7 +76,6 @@ def check_horizontal(row, column, player):
         if mat[row][column-i] == player:
             count += 1
             if count == 3:
-                print("HORIZONTAL2")
                 return player
         else:
             break
@@ -91,18 +88,14 @@ def check_diagonal_1(row, column, player):
         if mat[row+i][column+i] == player:
             count += 1
             if count == 3:
-                print("DIAGONAL1.1")
                 return player
         else:
             break
     # to the top-left
-    print(count)
     for i in range(1, min(row+1, column+1)):
-        print(row-i, column-i, i)
         if mat[row-i][column-i] == player:
             count += 1
             if count == 3:
-                print("DIAGONAL1.2")
                 return player
         else:
             break
@@ -115,7 +108,6 @@ def check_diagonal_2(row, column, player):
         if mat[row-i][column+i] == player:
             count += 1
             if count == 3:
-                print("DIAGONAL2.1")
                 return player
         else:
             break
@@ -124,7 +116,6 @@ def check_diagonal_2(row, column, player):
         if mat[row+i][column-i] == player:
             count += 1
             if count == 3:
-                print("DIAGONAL2.2")
                 return player
         else:
             break
@@ -199,7 +190,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if pygame.mouse.get_pressed()[0]:
+        if event.type == pygame.MOUSEBUTTONUP:
             column = get_column()
             row = find_first_cell_free(column)
             if row != -1:
@@ -209,7 +200,6 @@ while running:
                     mat[row][column] = 2
                 moves += 1
                 winner = check_win(row, column, turn + 1)
-                print(moves)
                 if winner != 0 or moves == 6*7:
                     game_over = True
                 turn = (turn + 1) % 2
