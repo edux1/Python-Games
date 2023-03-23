@@ -24,6 +24,7 @@ def display_frame(x, y):
         image = pygame.image.load(png_list[0]).convert()
         image = pygame.transform.scale(image, (23, 23))
         screen.blit(image,[x*CELL_SIZE, y*CELL_SIZE])
+
     pygame.display.flip()
 
 def get_mat_pos(x, y):
@@ -41,7 +42,6 @@ def generate_bombs(x, y):
         col = random.randrange(0, COLUMNS)
         row = random.randrange(0, ROWS)
         while col == x and row == y or solution[col][row] == 11:
-            print("while?")
             col = random.randrange(0, COLUMNS)
             row = random.randrange(0, ROWS)
         mine_list.append((col, row))
@@ -52,18 +52,27 @@ def generate_bombs(x, y):
 def calculate_other_cells():
     for mine in mine_list:
         x,y  = mine[0], mine[1]
-        print("bomb:", x,y)
         for i in range(x-1, x+2):
             for j in range(y-1, y+2):
-                print(i,j)
                 if i >= 0 and i < COLUMNS and j >= 0 and j < ROWS and solution[i][j] != 11:
-                    print("add")
                     solution[i][j] += 1
 
 def generate_escenary(x, y):
     generate_bombs(x, y)
     calculate_other_cells();
     
+def show_cell(x, y, visited):
+    print(visited)
+    if mat[x][y] == 9:
+        if solution[x][y] == 0:
+            for i in range(x-1, x+2):
+                for j in range(y-1, y+2):
+                    if i >= 0 and i < COLUMNS and j >= 0 and j < ROWS and not (i,j) in visited:
+                        print("RECURSION")
+                        visited.append((i,j))
+                        show_cell(i, j, visited)
+        mat[x][y] = solution[x][y]
+
 def print_mat(mat):
     for i in range(ROWS):
         print(mat[i])
@@ -98,11 +107,11 @@ while running:
         if pygame.mouse.get_pressed()[0]:
             pos_x, pos_y = get_mouse_pos()
         if event.type == pygame.MOUSEBUTTONUP:
+            x, y = get_mouse_pos()
             if first_click:
-                x, y = get_mouse_pos()
                 generate_escenary(x, y)
-                mat = solution
                 first_click = False
+            show_cell(x, y, [(x,y)])
             pos_x, pos_y = -1, -1
 
 
