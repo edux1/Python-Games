@@ -1,4 +1,4 @@
-import pygame, random
+import pygame, random, time
 
 # COLORES
 BLACK = (0,0,0)
@@ -30,9 +30,9 @@ def display_frame(x, y):
 
 def draw_timer():
     # 127 >  1
-    hundredths = timer // 100
-    tenths = (timer - (hundredths * 100)) // 10 
-    units = timer % 10
+    hundredths = elapsed_time // 100
+    tenths = (elapsed_time - (hundredths * 100)) // 10 
+    units = elapsed_time % 10
     x = COLUMNS*CELL_SIZE - 10
     y = TOP_BAR_SIZE//2-20
     draw_number(units, x-23, y)
@@ -41,17 +41,29 @@ def draw_timer():
 
 def draw_bomb_countdown():
     countdown = BOMBS - len(flag_list)
+    negative_hundreths = False
+    negative_tenths = False
+    if countdown < -9:
+        negative_hundreths = True
+    elif countdown < 0:
+        negative_tenths = True
+    countdown = abs(countdown)
     hundredths = countdown // 100
     tenths = (countdown - (hundredths * 100)) // 10 
-    units = countdown % 10
+    units = countdown - (hundredths*100 + tenths*10)
     x = 10
     y = TOP_BAR_SIZE//2-20
+    
+    
     draw_number(units, x+23*2, y)
-    draw_number(tenths, x+23, y)
-    draw_number(hundredths, x, y)
+    draw_number(tenths, x+23, y, negative_tenths)
+    draw_number(hundredths, x, y, negative_hundreths)
 
-def draw_number(num, x, y):
-    number = pygame.image.load(numbers_list[num]).convert()
+def draw_number(num, x, y, negative=False):
+    if negative:
+        number = pygame.image.load("assets/negative.png").convert()
+    else:
+        number = pygame.image.load(numbers_list[num]).convert()
     screen.blit(number, [x, y])
 
 def draw_face(x, y):
@@ -159,6 +171,8 @@ def show_wrong_flags():
 def convert_unclicked_to_flag():
     for mine in mine_list:
         x, y = mine[0], mine[1]
+        if mat[x][y] != 10:
+            flag_list.append((x, y))
         mat[x][y] = 10
 
 def switch_flag(x, y):
@@ -193,7 +207,8 @@ first_click = True
 game_over = False
 win = False
 countdown = COLUMNS * ROWS - BOMBS
-timer = 0
+start_time = None
+elapsed_time = 0
 
 face_image_rect = pygame.Rect((0,0), (FACE_SIZE, FACE_SIZE))
 face_image_rect.center = (CELL_SIZE*ROWS//2, TOP_BAR_SIZE//2)
@@ -202,7 +217,9 @@ pos_x, pos_y = -1, -1
 
 while running:
     clock.tick(60)
-    timer = pygame.time.get_ticks() // 1000
+    #timer = pygame.time.get_ticks() // 1000
+    if start_time and not game_over:
+        elapsed_time = int(time.time() - start_time)
     if game_over:
         if win:
             convert_unclicked_to_flag()
@@ -219,6 +236,8 @@ while running:
             x, y = get_mouse_pos()
             if face_image_rect.collidepoint(x, y):
                 # Restarting game
+                elapsed_time = 0
+                start_time = None
                 mine_list = []
                 flag_list = []
                 game_over = False
@@ -227,7 +246,6 @@ while running:
                 countdown = COLUMNS * ROWS - BOMBS
                 mat = [[9 for _ in range(ROWS)] for _ in range(ROWS)]
                 solution = [[0 for _ in range(ROWS)] for _ in range(ROWS)]
-                print_mat(solution)
                 
             x, y = get_mat_pos(x, y)
             # event.button 1 - Left click
@@ -238,6 +256,7 @@ while running:
                         if first_click:
                             generate_escenary(x, y)
                             first_click = False
+                            start_time = time.time()
                         if mat[x][y] == 9:
                             game_over = show_cell(x, y, [(x,y)])
                         elif 0 < mat[x][y] < 9:
