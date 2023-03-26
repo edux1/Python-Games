@@ -4,17 +4,21 @@ import pygame, random, time
 BLACK = (0,0,0)
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+RED = (255, 0, 0)
+
 BACKGROUND = (185,185,185)
 
 FACE_SIZE = 32
 CELL_SIZE = 23
 
 TOP_BAR_SIZE = 50
+BOTTOM_BAR_SIZE = 50
 
 COLUMNS = ROWS = 9
 BOMBS = 10
 
-size = (COLUMNS * CELL_SIZE, ROWS * CELL_SIZE + TOP_BAR_SIZE)
+size = (COLUMNS * CELL_SIZE, ROWS * CELL_SIZE + TOP_BAR_SIZE + BOTTOM_BAR_SIZE)
 
 def display_frame(x, y):
     screen.fill(BACKGROUND)
@@ -26,10 +30,29 @@ def display_frame(x, y):
     draw_face(x, y)
     draw_timer()
     draw_bomb_countdown()
+    draw_buttons()
     pygame.display.flip()
 
+def draw_button(text, x, y, color):
+    draw_text(screen, text, 14, x, y, color)
+    pygame.draw.line(screen, BLACK, (x+30,y-BOTTOM_BAR_SIZE//4+20), (x+30, y-BOTTOM_BAR_SIZE//4), width=1)
+    pygame.draw.line(screen, BLACK, (x-30,y-BOTTOM_BAR_SIZE//4+20), (x+30, y-BOTTOM_BAR_SIZE//4+20), width=1)
+    pygame.draw.line(screen, WHITE, (x-30, y-BOTTOM_BAR_SIZE//4), (x+30,y-BOTTOM_BAR_SIZE//4), width=1)
+    pygame.draw.line(screen, WHITE, (x-30, y-BOTTOM_BAR_SIZE//4), (x-30,y-BOTTOM_BAR_SIZE//4+20), width=1)
+
+def draw_buttons():
+    draw_button("EASY", 35, TOP_BAR_SIZE + CELL_SIZE*ROWS + BOTTOM_BAR_SIZE//2, BLUE)
+    draw_button("MEDIUM", COLUMNS*CELL_SIZE//2, TOP_BAR_SIZE + CELL_SIZE*ROWS + BOTTOM_BAR_SIZE//2, YELLOW)
+    draw_button("HARD", COLUMNS*CELL_SIZE - 35, TOP_BAR_SIZE + CELL_SIZE*ROWS + BOTTOM_BAR_SIZE//2, RED)
+
+def draw_text(surface, text, size, x, y, color):
+    font = pygame.font.SysFont("calibri", size, bold=True)
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect()
+    text_rect.center = (x, y)
+    surface.blit(text_surface, text_rect)
+
 def draw_timer():
-    # 127 >  1
     hundredths = elapsed_time // 100
     tenths = (elapsed_time - (hundredths * 100)) // 10 
     units = elapsed_time % 10
@@ -52,9 +75,7 @@ def draw_bomb_countdown():
     tenths = (countdown - (hundredths * 100)) // 10 
     units = countdown - (hundredths*100 + tenths*10)
     x = 10
-    y = TOP_BAR_SIZE//2-20
-    
-    
+    y = TOP_BAR_SIZE//2-20    
     draw_number(units, x+23*2, y)
     draw_number(tenths, x+23, y, negative_tenths)
     draw_number(hundredths, x, y, negative_hundreths)
@@ -68,7 +89,7 @@ def draw_number(num, x, y, negative=False):
 
 def draw_face(x, y):
     if not game_over:
-        if x >= 0 and y >= 0 and mat[x][y] == 9:
+        if x >= 0 and ROWS > y >= 0 and mat[x][y] == 9:
             image = pygame.image.load(png_list[0]).convert()
             image = pygame.transform.scale(image, (23, 23))
             screen.blit(image,[x*CELL_SIZE, y*CELL_SIZE + TOP_BAR_SIZE])
@@ -79,8 +100,20 @@ def draw_face(x, y):
         face_image = pygame.image.load("assets/death_face.png").convert()
     face_image = pygame.transform.scale(face_image, (FACE_SIZE, FACE_SIZE))
     face_image_rect = face_image.get_rect()
-    face_image_rect.center = (CELL_SIZE*ROWS//2, TOP_BAR_SIZE//2)
+    face_image_rect.center = (CELL_SIZE*COLUMNS/2, TOP_BAR_SIZE//2)
     screen.blit(face_image, face_image_rect)
+
+def check_buttons(x, y):
+    easy_bt = pygame.Rect((5, TOP_BAR_SIZE + CELL_SIZE*ROWS + BOTTOM_BAR_SIZE//4), (61, 22))
+    medium_bt = pygame.Rect((COLUMNS*CELL_SIZE//2-30, TOP_BAR_SIZE + CELL_SIZE*ROWS + BOTTOM_BAR_SIZE//4), (61, 22))
+    hard_bt = pygame.Rect((COLUMNS*CELL_SIZE-65, TOP_BAR_SIZE + CELL_SIZE*ROWS + BOTTOM_BAR_SIZE//4), (61, 22))
+    if easy_bt.collidepoint(x, y):
+        return 1
+    if medium_bt.collidepoint(x, y):
+        return 2
+    if hard_bt.collidepoint(x, y):
+        return 3
+    return 0
 
 def get_mat_pos(x, y):
     y -= TOP_BAR_SIZE 
@@ -216,8 +249,7 @@ face_image_rect.center = (CELL_SIZE*ROWS//2, TOP_BAR_SIZE//2)
 pos_x, pos_y = -1, -1
 
 while running:
-    clock.tick(60)
-    #timer = pygame.time.get_ticks() // 1000
+    clock.tick(15)
     if start_time and not game_over:
         elapsed_time = int(time.time() - start_time)
     if game_over:
@@ -244,29 +276,59 @@ while running:
                 first_click = True
                 win = False
                 countdown = COLUMNS * ROWS - BOMBS
-                mat = [[9 for _ in range(ROWS)] for _ in range(ROWS)]
-                solution = [[0 for _ in range(ROWS)] for _ in range(ROWS)]
-                
-            x, y = get_mat_pos(x, y)
-            # event.button 1 - Left click
-            # event.button 3 - Right click
-            if not game_over:               
-                if x >= 0 and y >= 0:
-                    if event.button == 1:   
-                        if first_click:
-                            generate_escenary(x, y)
-                            first_click = False
-                            start_time = time.time()
-                        if mat[x][y] == 9:
-                            game_over = show_cell(x, y, [(x,y)])
-                        elif 0 < mat[x][y] < 9:
-                            game_over = show__neighbour_cells(x, y)
-                        pos_x, pos_y = -1, -1
-                    elif event.button == 3:
-                        switch_flag(x, y)
-                    if countdown == 0:
-                        game_over = True
-                        win = True
+                mat = [[9 for _ in range(ROWS)] for _ in range(COLUMNS)]
+                solution = [[0 for _ in range(ROWS)] for _ in range(COLUMNS)]
+            elif COLUMNS*CELL_SIZE > x >= 0 and ROWS*CELL_SIZE+TOP_BAR_SIZE+BOTTOM_BAR_SIZE> y > ROWS*CELL_SIZE+TOP_BAR_SIZE:
+                button_clicked = check_buttons(x,y)
+                if button_clicked == 1:
+                    COLUMNS = ROWS = 9
+                    BOMBS = 10
+                    screen = pygame.display.set_mode((COLUMNS * CELL_SIZE, ROWS * CELL_SIZE + TOP_BAR_SIZE + BOTTOM_BAR_SIZE))
+                elif button_clicked == 2:
+                    COLUMNS = ROWS = 16
+                    BOMBS = 40
+                    screen = pygame.display.set_mode((COLUMNS * CELL_SIZE, ROWS * CELL_SIZE + TOP_BAR_SIZE + BOTTOM_BAR_SIZE))
+                elif button_clicked == 3:
+                    COLUMNS = 30
+                    ROWS = 16
+                    BOMBS = 99
+                    screen = pygame.display.set_mode((COLUMNS * CELL_SIZE, ROWS * CELL_SIZE + TOP_BAR_SIZE + BOTTOM_BAR_SIZE))
+                if button_clicked != 0:
+                    # Restarting game
+                    elapsed_time = 0
+                    start_time = None
+                    mine_list = []
+                    flag_list = []
+                    game_over = False
+                    first_click = True
+                    win = False
+                    countdown = COLUMNS * ROWS - BOMBS
+                    mat = [[9 for _ in range(ROWS)] for _ in range(COLUMNS)]
+                    solution = [[0 for _ in range(ROWS)] for _ in range(COLUMNS)]
+                    face_image_rect = pygame.Rect((0,0), (FACE_SIZE, FACE_SIZE))
+                    face_image_rect.center = (CELL_SIZE*COLUMNS//2, TOP_BAR_SIZE//2)
+                    pos_x, pos_y = -1, -1
+            else:
+                x, y = get_mat_pos(x, y)
+                # event.button 1 - Left click
+                # event.button 3 - Right click
+                if not game_over:               
+                    if x >= 0 and ROWS > y >= 0:
+                        if event.button == 1:   
+                            if first_click:
+                                generate_escenary(x, y)
+                                first_click = False
+                                start_time = time.time()
+                            if mat[x][y] == 9:
+                                game_over = show_cell(x, y, [(x,y)])
+                            elif 0 < mat[x][y] < 9:
+                                game_over = show__neighbour_cells(x, y)
+                            pos_x, pos_y = -1, -1
+                        elif event.button == 3:
+                            switch_flag(x, y)
+                        if countdown == 0:
+                            game_over = True
+                            win = True
     display_frame(pos_x, pos_y)
 
 pygame.quit()
