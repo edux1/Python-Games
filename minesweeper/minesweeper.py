@@ -25,6 +25,7 @@ def display_frame(x, y):
             screen.blit(image,[i*CELL_SIZE, j*CELL_SIZE + TOP_BAR_SIZE])
     draw_face(x, y)
     draw_timer()
+    draw_bomb_countdown()
     pygame.display.flip()
 
 def draw_timer():
@@ -32,12 +33,25 @@ def draw_timer():
     hundredths = timer // 100
     tenths = (timer - (hundredths * 100)) // 10 
     units = timer % 10
-    draw_number(hundredths, 10, 2)
-    print(hundredths, tenths, units)
-    
+    x = COLUMNS*CELL_SIZE - 10
+    y = TOP_BAR_SIZE//2-20
+    draw_number(units, x-23, y)
+    draw_number(tenths, x-(23*2), y)
+    draw_number(hundredths, x-(23*3), y)
+
+def draw_bomb_countdown():
+    countdown = BOMBS - len(flag_list)
+    hundredths = countdown // 100
+    tenths = (countdown - (hundredths * 100)) // 10 
+    units = countdown % 10
+    x = 10
+    y = TOP_BAR_SIZE//2-20
+    draw_number(units, x+23*2, y)
+    draw_number(tenths, x+23, y)
+    draw_number(hundredths, x, y)
+
 def draw_number(num, x, y):
     number = pygame.image.load(numbers_list[num]).convert()
-    number = pygame.transform.scale(number, (23, 46))
     screen.blit(number, [x, y])
 
 def draw_face(x, y):
@@ -64,10 +78,6 @@ def get_mat_pos(x, y):
 
 def get_mouse_pos():
     x, y = pygame.mouse.get_pos()
-    #if x < 0 or x > CELL_SIZE * COLUMNS:
-    #    x = -1
-    #if y < TOP_BAR_SIZE or y >= CELL_SIZE * ROWS + TOP_BAR_SIZE:
-    #    y = -1
     return x, y
 
 def generate_bombs(x, y):
@@ -159,10 +169,6 @@ def switch_flag(x, y):
         mat[x][y] = 9
         flag_list.remove((x,y))
 
-def print_mat(mat):
-    for i in range(ROWS):
-        print(mat[i])
-
 pygame.init()
 
 png_list = ["assets/0.png", "assets/1.png", "assets/2.png", "assets/3.png", "assets/4.png", 
@@ -181,8 +187,6 @@ mat = [[9 for _ in range(ROWS)] for _ in range(ROWS)]
 solution = [[0 for _ in range(ROWS)] for _ in range(ROWS)]
 mine_list = []
 flag_list = []
-print_mat(mat)
-
 
 running = True
 first_click = True
