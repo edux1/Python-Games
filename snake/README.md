@@ -13,3 +13,4 @@ To execute the game go inside the directory where the game is found and write:
 python .\snake.py
 ```
 
+![image](https://github.com/edux1/Python-Games/assets/72969479/6871a80c-7509-437f-a2da-2a34f7092bd1)
